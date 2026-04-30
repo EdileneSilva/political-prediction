@@ -2,37 +2,41 @@ name: CI/CD - Lint + Build + Push
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "feat/CICD" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
-
-      # 1. Code checkout
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          #
+          ref: ${{ github.head_ref }}
 
-      # 2. Setup Python (for lint)
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      # 3. Install lint
-      - name: Install flake8
-        run: pip install flake8
+      # 
+      - name: Install Ruff
+        run: pip install ruff
 
-      # 4. Run lint
-      - name: Run lint
-        run: flake8 . || true
+      - name: Run Ruff Fix
+        run: ruff check --fix .
 
-      # 5. Install dependencies
+      # 
+      - name: Commit fixes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-fix linting errors [skip ci]"
+
       - name: Install dependencies
         run: |
             pip install --upgrade pip
@@ -40,33 +44,27 @@ jobs:
             pip install -r api/requirements-dev.txt
             pip install -r django_political_app/requirements-dev.txt
 
-      #
       - name: Set environment variables
         run: |
             echo "DJANGO_SETTINGS_MODULE=django_political_app.settings" >> $GITHUB_ENV
             echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV      
 
-      # 5. tests 
       - name: Run tests
         run: pytest
 
-      # 5. Login GitHub Container Registry
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # 6. Build + push FASTAPI
       - name: Build and push FastAPI
         run: |
           docker build -t ghcr.io/edilenesilva/fastapi-app:v1.0 ./api
           docker push ghcr.io/edilenesilva/fastapi-app:v1.0
 
-      # 7. Build + push DJANGO
       - name: Build and push Django
         run: |
           docker build -t ghcr.io/edilenesilva/django-app:v1.0 ./django_political_app
           docker push ghcr.io/edilenesilva/django-app:v1.0
 
-      # 8. Build + push INGEST
       - name: Build and push Ingest
         run: |
           docker build -t ghcr.io/edilenesilva/ingest-app:v1.0 -f scripts/Dockerfile .
