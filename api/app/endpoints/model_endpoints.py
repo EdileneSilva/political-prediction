@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, Query
+from fastapi import APIRouter, status
 
 router = APIRouter(prefix="/model", tags=["model"])
 

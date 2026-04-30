@@ -1,5 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, status
-from sqlalchemy.engine import Engine
+from fastapi import APIRouter, BackgroundTasks, status
 from app.db.database import engine  # On importe l'engine directement
 from app.schemas.train import TrainSettings
 from app.services.train import TrainService

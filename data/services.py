@@ -1,7 +1,5 @@
 import requests, json
 from pathlib import Path
-import pandas as pd
-import io
 
 
 def process_api_request(url):

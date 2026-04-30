@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
 from django.views.generic.base import View
 
 from django.views import View

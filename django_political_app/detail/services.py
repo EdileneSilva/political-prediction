@@ -1,6 +1,5 @@
 import requests
 import os
-from pathlib import Path
 
 class DetailService:
     BASE_URL_LOCAL = os.environ.get("BASE_URL_LOCAL")
