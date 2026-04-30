@@ -4,10 +4,10 @@ from django.test import Client
 from django.urls import reverse
 from users.models import CustomUser
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def client():
@@ -51,13 +51,17 @@ def api_response_vide():
 # SERVICES — DetailService
 # ============================================================
 
+
 class TestDetailService:
 
     @patch("detail.services.requests.get")
     def test_succes_retourne_donnees(self, mock_get, api_response_communes):
         """Retourne les données JSON si l'API répond 200."""
         from detail.services import DetailService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: api_response_communes)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: api_response_communes
+        )
 
         service = DetailService()
         result = service.get_detail_communes()
@@ -69,6 +73,7 @@ class TestDetailService:
     def test_erreur_api_retourne_defaut(self, mock_get):
         """Retourne un dict vide par défaut si l'API ne répond pas 200."""
         from detail.services import DetailService
+
         mock_get.return_value = MagicMock(status_code=500)
 
         service = DetailService()
@@ -81,6 +86,7 @@ class TestDetailService:
     def test_exception_retourne_defaut(self, mock_get):
         """Retourne un dict vide par défaut si une exception est levée."""
         from detail.services import DetailService
+
         mock_get.side_effect = Exception("Timeout")
 
         service = DetailService()
@@ -93,7 +99,10 @@ class TestDetailService:
     def test_limit_max_100(self, mock_get, api_response_communes):
         """La limite est plafonnée à 100 même si on passe 200."""
         from detail.services import DetailService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: api_response_communes)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: api_response_communes
+        )
 
         service = DetailService()
         service.get_detail_communes(limit=200)
@@ -106,7 +115,10 @@ class TestDetailService:
     def test_pagination_skip_calcule(self, mock_get, api_response_communes):
         """Le skip est bien calculé à partir de la page et la limite."""
         from detail.services import DetailService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: api_response_communes)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: api_response_communes
+        )
 
         service = DetailService()
         service.get_detail_communes(page=3, limit=25)
@@ -118,7 +130,10 @@ class TestDetailService:
     def test_recherche_passee_en_parametre(self, mock_get, api_response_communes):
         """Le terme de recherche est bien transmis à l'API."""
         from detail.services import DetailService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: api_response_communes)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: api_response_communes
+        )
 
         service = DetailService()
         service.get_detail_communes(search="Lille")
@@ -131,6 +146,7 @@ class TestDetailService:
 # VIEWS — DetailView
 # ============================================================
 
+
 @pytest.mark.django_db
 class TestDetailView:
 
@@ -141,7 +157,9 @@ class TestDetailView:
         assert "/home" in response["Location"]
 
     @patch("detail.views.DetailService.get_detail_communes")
-    def test_acces_connecte_200(self, mock_service, authenticated_client, api_response_communes):
+    def test_acces_connecte_200(
+        self, mock_service, authenticated_client, api_response_communes
+    ):
         """Un utilisateur connecté accède à la page (200)."""
         mock_service.return_value = api_response_communes
 
@@ -149,7 +167,9 @@ class TestDetailView:
         assert response.status_code == 200
 
     @patch("detail.views.DetailService.get_detail_communes")
-    def test_valeurs_par_defaut(self, mock_service, authenticated_client, api_response_communes):
+    def test_valeurs_par_defaut(
+        self, mock_service, authenticated_client, api_response_communes
+    ):
         """Sans paramètres, page=1 et limit=25 par défaut."""
         mock_service.return_value = api_response_communes
 
@@ -166,7 +186,9 @@ class TestDetailView:
         assert response.context["total_pages"] == 4  # 100 / 25
 
     @patch("detail.views.DetailService.get_detail_communes")
-    def test_pagination_total_items_zero(self, mock_service, authenticated_client, api_response_vide):
+    def test_pagination_total_items_zero(
+        self, mock_service, authenticated_client, api_response_vide
+    ):
         """Si total=0, total_pages vaut 1 (pas de division par zéro)."""
         mock_service.return_value = api_response_vide
 
@@ -199,7 +221,9 @@ class TestDetailView:
         assert response.context["has_next"] is False
 
     @patch("detail.views.DetailService.get_detail_communes")
-    def test_recherche_transmise_au_contexte(self, mock_service, authenticated_client, api_response_communes):
+    def test_recherche_transmise_au_contexte(
+        self, mock_service, authenticated_client, api_response_communes
+    ):
         """Le terme de recherche est bien dans le contexte."""
         mock_service.return_value = api_response_communes
 
@@ -207,7 +231,9 @@ class TestDetailView:
         assert response.context["search_query"] == "Lille"
 
     @patch("detail.views.DetailService.get_detail_communes")
-    def test_limit_options_dans_contexte(self, mock_service, authenticated_client, api_response_communes):
+    def test_limit_options_dans_contexte(
+        self, mock_service, authenticated_client, api_response_communes
+    ):
         """Les options de limite sont bien dans le contexte."""
         mock_service.return_value = api_response_communes
 

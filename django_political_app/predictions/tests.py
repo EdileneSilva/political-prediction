@@ -4,10 +4,10 @@ from django.test import Client
 from django.urls import reverse
 from users.models import CustomUser
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def client():
@@ -55,13 +55,17 @@ def communes_response():
 # SERVICES — PredictionService
 # ============================================================
 
+
 class TestPredictionService:
 
     @patch("predictions.services.requests.get")
     def test_get_prediction_commune_succes(self, mock_get, api_response_success):
         """Retourne les données JSON si l'API répond 200."""
         from predictions.services import PredictionService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: api_response_success)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: api_response_success
+        )
 
         service = PredictionService()
         result = service.get_prediction_commune("59009")
@@ -74,6 +78,7 @@ class TestPredictionService:
     def test_get_prediction_commune_api_erreur(self, mock_get):
         """Retourne None si l'API répond autre chose que 200."""
         from predictions.services import PredictionService
+
         mock_get.return_value = MagicMock(status_code=404)
 
         service = PredictionService()
@@ -85,6 +90,7 @@ class TestPredictionService:
     def test_get_prediction_commune_exception(self, mock_get):
         """Retourne None si une exception est levée (timeout, réseau...)."""
         from predictions.services import PredictionService
+
         mock_get.side_effect = Exception("Timeout")
 
         service = PredictionService()
@@ -96,7 +102,10 @@ class TestPredictionService:
     def test_search_communes_succes(self, mock_get, communes_response):
         """Retourne la liste des communes si l'API répond 200."""
         from predictions.services import PredictionService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: communes_response)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: communes_response
+        )
 
         service = PredictionService()
         result = service.search_communes("Lille")
@@ -109,6 +118,7 @@ class TestPredictionService:
     def test_search_communes_api_erreur(self, mock_get):
         """Retourne une liste vide si l'API répond autre chose que 200."""
         from predictions.services import PredictionService
+
         mock_get.return_value = MagicMock(status_code=500)
 
         service = PredictionService()
@@ -120,6 +130,7 @@ class TestPredictionService:
     def test_search_communes_exception(self, mock_get):
         """Retourne une liste vide si une exception est levée."""
         from predictions.services import PredictionService
+
         mock_get.side_effect = Exception("Connexion refusée")
 
         service = PredictionService()
@@ -131,6 +142,7 @@ class TestPredictionService:
 # ============================================================
 # VIEWS — PredictionsView
 # ============================================================
+
 
 @pytest.mark.django_db
 class TestPredictionsView:
@@ -153,11 +165,15 @@ class TestPredictionsView:
         assert response.context["error"] is None
 
     @patch("predictions.views.PredictionService.get_prediction_commune")
-    def test_avec_code_insee_valide(self, mock_predict, authenticated_client, api_response_success):
+    def test_avec_code_insee_valide(
+        self, mock_predict, authenticated_client, api_response_success
+    ):
         """Avec un code INSEE valide, prediction_data est rempli."""
         mock_predict.return_value = api_response_success
 
-        response = authenticated_client.get(reverse("predictions"), {"code_insee": "59009"})
+        response = authenticated_client.get(
+            reverse("predictions"), {"code_insee": "59009"}
+        )
 
         assert response.status_code == 200
         assert response.context["prediction_data"] is not None
@@ -168,7 +184,9 @@ class TestPredictionsView:
         """Avec un code INSEE sans résultat, error est rempli."""
         mock_predict.return_value = None
 
-        response = authenticated_client.get(reverse("predictions"), {"code_insee": "99999"})
+        response = authenticated_client.get(
+            reverse("predictions"), {"code_insee": "99999"}
+        )
 
         assert response.status_code == 200
         assert response.context["prediction_data"] is None
@@ -179,7 +197,9 @@ class TestPredictionsView:
         """Si l'API retourne un status != success, error est rempli."""
         mock_predict.return_value = {"status": "error"}
 
-        response = authenticated_client.get(reverse("predictions"), {"code_insee": "59009"})
+        response = authenticated_client.get(
+            reverse("predictions"), {"code_insee": "59009"}
+        )
 
         assert response.context["prediction_data"] is None
         assert response.context["error"] is not None
@@ -188,6 +208,7 @@ class TestPredictionsView:
 # ============================================================
 # VIEWS — commune_autocomplete
 # ============================================================
+
 
 @pytest.mark.django_db
 class TestCommuneAutocomplete:
@@ -199,7 +220,9 @@ class TestCommuneAutocomplete:
         assert response.json() == {"results": []}
 
     @patch("predictions.views.PredictionService.search_communes")
-    def test_recherche_valide(self, mock_search, authenticated_client, communes_response):
+    def test_recherche_valide(
+        self, mock_search, authenticated_client, communes_response
+    ):
         """Avec une requête valide, retourne les communes formatées."""
         mock_search.return_value = communes_response["data"]
 

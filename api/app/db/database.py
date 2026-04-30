@@ -13,6 +13,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base est la classe de base pour les modèles SQLAlchemy
 Base = declarative_base()
 
+
 # Dépendance pour FastAPI (Dependency Injection)
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
+
 class CommuneDataSchema(BaseModel):
     Code_INSEE: str
     Résultat: str
@@ -24,7 +25,7 @@ class CommuneDataSchema(BaseModel):
     Famille_monoparentale: float
     Couple_sans_enfant: float
     Couple_avec_enfants: float
-    
+
     # Âges
     Age_15_24: float
     Age_25_39: float
@@ -47,12 +48,13 @@ class CommuneDataSchema(BaseModel):
 
     # Permet de transformer un objet SQLAlchemy en Pydantic automatiquement
     model_config = ConfigDict(from_attributes=True)
-     
+
 
 class TrainResponse(BaseModel):
     status: str
     message: str
     accuracy: float | None = None
+
 
 class TrainSettings(BaseModel):
     n_estimators: int = 100

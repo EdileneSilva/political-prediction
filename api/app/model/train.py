@@ -3,13 +3,14 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
+
 class TrainingData(Base):
     __tablename__ = "training"
 
     # Identifiant unique (Code INSEE)
     Code_INSEE = Column(String, primary_key=True, index=True)
-    Résultat = Column(String) # La cible (Label)
-    
+    Résultat = Column(String)  # La cible (Label)
+
     # CSP et Genre
     Femmes = Column(Float)
     Hommes = Column(Float)
@@ -32,7 +33,7 @@ class TrainingData(Base):
     Famille_monoparentale = Column(Float, name="Famille monoparentale")
     Couple_sans_enfant = Column(Float, name="Couple sans enfant")
     Couple_avec_enfants = Column(Float, name="Couple avec enfants")
-    
+
     # Âges
     Age_15_24 = Column(Float, name="15-24 ans")
     Age_25_39 = Column(Float, name="25-39 ans")
@@ -48,7 +49,7 @@ class TrainingData(Base):
     Veufs = Column(Float)
     Divorcés = Column(Float)
     Célibataires = Column(Float)
-    
+
     # Bases de calcul
     Population_avec_enfants = Column(Float)
     Population_active = Column(Float)

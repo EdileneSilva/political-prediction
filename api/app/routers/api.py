@@ -8,6 +8,6 @@ from app.endpoints.prediction_endpoints import router as prediction_router
 api_router = APIRouter()
 api_router.include_router(prediction_router)
 api_router.include_router(model_router)
-api_router.include_router(commune_router) 
+api_router.include_router(commune_router)
 api_router.include_router(train_router)
 api_router.include_router(prediction_router)

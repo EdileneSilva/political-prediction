@@ -30,7 +30,7 @@ jobs:
 
       # 4. Run lint
       - name: Run lint
-        run: flake8 . || true
+        run: flake8 .
 
       # 5. Install dependencies
       - name: Install dependencies

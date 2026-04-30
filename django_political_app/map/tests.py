@@ -4,10 +4,10 @@ from django.test import Client
 from django.urls import reverse
 from users.models import CustomUser
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def client():
@@ -85,13 +85,17 @@ def full_map_data():
 # SERVICES — GeoService
 # ============================================================
 
+
 class TestGeoService:
 
     @patch("map.services.requests.get")
     def test_get_all_departments_succes(self, mock_get, departments_response):
         """Retourne la liste des départements si l'API répond 200."""
         from map.services import GeoService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: departments_response)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: departments_response
+        )
 
         service = GeoService()
         result = service.get_all_departments()
@@ -104,6 +108,7 @@ class TestGeoService:
     def test_get_all_departments_erreur(self, mock_get):
         """Retourne une liste vide si l'API répond autre chose que 200."""
         from map.services import GeoService
+
         mock_get.return_value = MagicMock(status_code=500)
 
         service = GeoService()
@@ -115,7 +120,10 @@ class TestGeoService:
     def test_get_election_results_succes(self, mock_get, election_response):
         """Retourne les résultats électoraux si l'API répond 200."""
         from map.services import GeoService
-        mock_get.return_value = MagicMock(status_code=200, json=lambda: election_response)
+
+        mock_get.return_value = MagicMock(
+            status_code=200, json=lambda: election_response
+        )
 
         service = GeoService()
         result = service.get_election_results_by_department("59", year="2022")
@@ -128,6 +136,7 @@ class TestGeoService:
     def test_get_election_results_erreur(self, mock_get):
         """Retourne un dict vide si l'API répond autre chose que 200."""
         from map.services import GeoService
+
         mock_get.return_value = MagicMock(status_code=404)
 
         service = GeoService()
@@ -139,6 +148,7 @@ class TestGeoService:
     def test_get_election_results_exception(self, mock_get):
         """Retourne un dict vide si une exception est levée."""
         from map.services import GeoService
+
         mock_get.side_effect = Exception("Timeout")
 
         service = GeoService()
@@ -146,9 +156,14 @@ class TestGeoService:
 
         assert result == {}
 
-    @patch.object(__import__("map.services", fromlist=["GeoService"]).GeoService, "get_election_results_by_department")
+    @patch.object(
+        __import__("map.services", fromlist=["GeoService"]).GeoService,
+        "get_election_results_by_department",
+    )
     @patch("map.services.requests.get")
-    def test_get_full_map_data_structure(self, mock_get, mock_election, election_response):
+    def test_get_full_map_data_structure(
+        self, mock_get, mock_election, election_response
+    ):
         """Retourne un dict avec center, communes et dept_nom."""
         from map.services import GeoService
 
@@ -182,10 +197,12 @@ class TestGeoService:
 # VIEWS — get_city_color
 # ============================================================
 
+
 class TestGetCityColor:
 
     def setup_method(self):
         from map.views import MapView
+
         self.view = MapView()
 
     def test_couleur_gauche(self):
@@ -215,6 +232,7 @@ class TestGetCityColor:
 # VIEWS — MapView
 # ============================================================
 
+
 @pytest.mark.django_db
 class TestMapView:
 
@@ -226,7 +244,14 @@ class TestMapView:
 
     @patch("map.views.GeoService.get_all_departments")
     @patch("map.views.GeoService.get_full_map_data")
-    def test_acces_connecte_200(self, mock_map, mock_depts, authenticated_client, full_map_data, departments_response):
+    def test_acces_connecte_200(
+        self,
+        mock_map,
+        mock_depts,
+        authenticated_client,
+        full_map_data,
+        departments_response,
+    ):
         """Un utilisateur connecté accède à la page (200)."""
         mock_map.return_value = full_map_data
         mock_depts.return_value = departments_response
@@ -236,7 +261,14 @@ class TestMapView:
 
     @patch("map.views.GeoService.get_all_departments")
     @patch("map.views.GeoService.get_full_map_data")
-    def test_departement_par_defaut_59(self, mock_map, mock_depts, authenticated_client, full_map_data, departments_response):
+    def test_departement_par_defaut_59(
+        self,
+        mock_map,
+        mock_depts,
+        authenticated_client,
+        full_map_data,
+        departments_response,
+    ):
         """Sans paramètre, le département par défaut est 59."""
         mock_map.return_value = full_map_data
         mock_depts.return_value = departments_response
@@ -246,7 +278,14 @@ class TestMapView:
 
     @patch("map.views.GeoService.get_all_departments")
     @patch("map.views.GeoService.get_full_map_data")
-    def test_annee_par_defaut_2022(self, mock_map, mock_depts, authenticated_client, full_map_data, departments_response):
+    def test_annee_par_defaut_2022(
+        self,
+        mock_map,
+        mock_depts,
+        authenticated_client,
+        full_map_data,
+        departments_response,
+    ):
         """Sans paramètre year, l'année par défaut est 2022."""
         mock_map.return_value = full_map_data
         mock_depts.return_value = departments_response
@@ -256,7 +295,14 @@ class TestMapView:
 
     @patch("map.views.GeoService.get_all_departments")
     @patch("map.views.GeoService.get_full_map_data")
-    def test_changement_departement(self, mock_map, mock_depts, authenticated_client, full_map_data, departments_response):
+    def test_changement_departement(
+        self,
+        mock_map,
+        mock_depts,
+        authenticated_client,
+        full_map_data,
+        departments_response,
+    ):
         """Le paramètre department est bien transmis au contexte."""
         mock_map.return_value = full_map_data
         mock_depts.return_value = departments_response
@@ -266,7 +312,14 @@ class TestMapView:
 
     @patch("map.views.GeoService.get_all_departments")
     @patch("map.views.GeoService.get_full_map_data")
-    def test_changement_annee(self, mock_map, mock_depts, authenticated_client, full_map_data, departments_response):
+    def test_changement_annee(
+        self,
+        mock_map,
+        mock_depts,
+        authenticated_client,
+        full_map_data,
+        departments_response,
+    ):
         """Le paramètre year est bien transmis au contexte."""
         mock_map.return_value = full_map_data
         mock_depts.return_value = departments_response
@@ -276,7 +329,14 @@ class TestMapView:
 
     @patch("map.views.GeoService.get_all_departments")
     @patch("map.views.GeoService.get_full_map_data")
-    def test_contexte_contient_departments(self, mock_map, mock_depts, authenticated_client, full_map_data, departments_response):
+    def test_contexte_contient_departments(
+        self,
+        mock_map,
+        mock_depts,
+        authenticated_client,
+        full_map_data,
+        departments_response,
+    ):
         """Le contexte contient bien la liste des départements."""
         mock_map.return_value = full_map_data
         mock_depts.return_value = departments_response

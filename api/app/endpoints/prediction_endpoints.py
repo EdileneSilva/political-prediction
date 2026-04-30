@@ -6,13 +6,14 @@ from app.schemas.predict import PredictionResponse
 
 router = APIRouter(prefix="/predict", tags=["prediction"])
 
+
 @router.get("/2027/{code_insee}", response_model=PredictionResponse)
 async def predict_2027(code_insee: str, db: Session = Depends(get_db)):
     """Prédit les résultat des élection présidentielle d'une commune
 
     Args:
         code_insee (str): Code INSEE de la commune
-        db (Session, optional): Session de base de données. 
+        db (Session, optional): Session de base de données.
 
     Returns:
         PredictionResponse: Les résultats de la prédiction

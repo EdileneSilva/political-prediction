@@ -5,10 +5,10 @@ from django.db import IntegrityError
 from users.models import CustomUser
 from users.forms import SignupForm, LoginForm
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def client():
@@ -33,6 +33,7 @@ def authenticated_client(client, user):
 # ============================================================
 # MODELS
 # ============================================================
+
 
 @pytest.mark.django_db
 class TestCustomUserModel:
@@ -86,6 +87,7 @@ class TestCustomUserModel:
 # ============================================================
 # VIEWS — SIGNUP
 # ============================================================
+
 
 @pytest.mark.django_db
 class TestSignupView:
@@ -169,6 +171,7 @@ class TestSignupView:
 # VIEWS — LOGIN
 # ============================================================
 
+
 @pytest.mark.django_db
 class TestCustomLoginView:
 
@@ -211,6 +214,7 @@ class TestCustomLoginView:
 # VIEWS — LOGOUT
 # ============================================================
 
+
 @pytest.mark.django_db
 class TestLogoutView:
 
@@ -222,6 +226,7 @@ class TestLogoutView:
 # ============================================================
 # FORMS — SIGNUP
 # ============================================================
+
 
 @pytest.mark.django_db
 class TestSignupForm:
@@ -325,6 +330,7 @@ class TestSignupForm:
 # ============================================================
 # FORMS — LOGIN
 # ============================================================
+
 
 class TestLoginForm:
 

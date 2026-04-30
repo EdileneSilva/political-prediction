@@ -3,10 +3,10 @@ from django.test import Client
 from django.urls import reverse
 from users.models import CustomUser
 
-
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def client():
@@ -31,6 +31,7 @@ def authenticated_client(client, user):
 # ============================================================
 # VIEWS — AccueilView
 # ============================================================
+
 
 @pytest.mark.django_db
 class TestAccueilView:

@@ -9,6 +9,7 @@ from datetime import datetime
 
 # On doit setter DATABASE_URL avant d'importer l'app
 import os
+
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
 
 from app.main import app
@@ -19,6 +20,7 @@ client = TestClient(app)
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def commune_data():
@@ -53,9 +55,11 @@ def prediction_data():
         "status": "success",
     }
 
+
 # ============================================================
 # ENDPOINT ROOT
 # ============================================================
+
 
 class TestRoot:
 
@@ -71,6 +75,7 @@ class TestRoot:
 # ============================================================
 # ENDPOINT COMMUNES — GET /communes/
 # ============================================================
+
 
 class TestGetCommunes:
 
@@ -132,6 +137,7 @@ class TestGetCommunes:
 # ENDPOINT COMMUNES — GET /communes/commune
 # ============================================================
 
+
 class TestGetCommuneByCode:
 
     @patch("app.endpoints.communes_endpoints.CommuneService.get_by_insee")
@@ -153,6 +159,7 @@ class TestGetCommuneByCode:
 # ============================================================
 # ENDPOINT COMMUNES — GET /communes/department/{code}
 # ============================================================
+
 
 class TestGetCommunesByDepartment:
 
@@ -181,6 +188,7 @@ class TestGetCommunesByDepartment:
 # ENDPOINT COMMUNES — GET /communes/communes/region/{code}
 # ============================================================
 
+
 class TestGetCommunesByRegion:
 
     @patch("app.endpoints.communes_endpoints.CommuneService")
@@ -193,6 +201,7 @@ class TestGetCommunesByRegion:
 # ============================================================
 # ENDPOINT PREDICTION — GET /predict/2027/{code_insee}
 # ============================================================
+
 
 class TestPredictionEndpoint:
 
@@ -226,9 +235,9 @@ class TestPredictionEndpoint:
     def test_predict_2027_donnees_incompletes_400(self, mock_predict):
         """Si les données historiques sont incomplètes, retourne 400."""
         from fastapi import HTTPException
+
         mock_predict.side_effect = HTTPException(
-            status_code=400,
-            detail="Données historiques 2011/2022 incomplètes."
+            status_code=400, detail="Données historiques 2011/2022 incomplètes."
         )
         response = client.get("/predict/2027/00000")
         assert response.status_code == 400
@@ -237,9 +246,9 @@ class TestPredictionEndpoint:
     def test_predict_2027_modele_introuvable_500(self, mock_predict):
         """Si le modèle est introuvable, retourne 500."""
         from fastapi import HTTPException
+
         mock_predict.side_effect = HTTPException(
-            status_code=500,
-            detail="Modèle binaire introuvable."
+            status_code=500, detail="Modèle binaire introuvable."
         )
         response = client.get("/predict/2027/59009")
         assert response.status_code == 500
@@ -249,6 +258,7 @@ class TestPredictionEndpoint:
 # ENDPOINT TRAIN — POST /train/
 # ============================================================
 
+
 class TestTrainEndpoint:
 
     def test_train_lance_en_arriere_plan_202(self):
@@ -256,7 +266,7 @@ class TestTrainEndpoint:
         payload = {
             "n_estimators": 100,
             "test_size": 0.2,
-            "model_name": "test_model.joblib"
+            "model_name": "test_model.joblib",
         }
         response = client.post("/train/", json=payload)
         assert response.status_code == 202
@@ -266,7 +276,7 @@ class TestTrainEndpoint:
         payload = {
             "n_estimators": 100,
             "test_size": 0.2,
-            "model_name": "test_model.joblib"
+            "model_name": "test_model.joblib",
         }
         response = client.post("/train/", json=payload)
         assert response.json()["status"] == "processing"
@@ -276,7 +286,7 @@ class TestTrainEndpoint:
         payload = {
             "n_estimators": 50,
             "test_size": 0.3,
-            "model_name": "mon_modele.joblib"
+            "model_name": "mon_modele.joblib",
         }
         response = client.post("/train/", json=payload)
         data = response.json()
@@ -300,6 +310,7 @@ class TestTrainEndpoint:
 # ============================================================
 # ENDPOINT MODEL — GET /model/ et POST /model/
 # ============================================================
+
 
 class TestModelEndpoint:
 

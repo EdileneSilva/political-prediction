@@ -1,11 +1,12 @@
 import requests
 import os
 
+
 class PredictionService:
-    BASE_URL_LOCAL=os.environ.get("BASE_URL_LOCAL")
+    BASE_URL_LOCAL = os.environ.get("BASE_URL_LOCAL")
 
     def get_prediction_commune(self, code_insee):
-        """ Récupère les prédictions pour une commune donnée.
+        """Récupère les prédictions pour une commune donnée.
 
         Args:
             code_insee (str): Le code INSEE de la commune pour laquelle récupérer les prédictions.
@@ -22,9 +23,9 @@ class PredictionService:
         except Exception as e:
             print(f"Erreur API: {e}")
             return None
-        
+
     def search_communes(self, query):
-        """ Recherche des communes en fonction d'une requête de recherche.
+        """Recherche des communes en fonction d'une requête de recherche.
 
         Args:
             query (str): La requête de recherche.
@@ -38,7 +39,7 @@ class PredictionService:
             response = requests.get(url, timeout=10)
             if response.status_code == 200:
                 # Ton service renvoie déjà le contenu de ['data']
-                return response.json().get('data', [])
+                return response.json().get("data", [])
             return []
         except Exception as e:
             print(f"Erreur API: {e}")
