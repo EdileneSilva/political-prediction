@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 from datetime import datetime
+from app.main import app
 
 # ============================================================
 # SETUP CLIENT
@@ -11,8 +12,6 @@ from datetime import datetime
 import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite:///./test.db")
-
-from app.main import app
 
 client = TestClient(app)
 
