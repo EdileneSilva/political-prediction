@@ -29,8 +29,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'app.docker.localhost', 'predilection.duckdns.org']
 
+CSRF_TRUSTED_ORIGINS = ['https://app.docker.localhost', 'https://predilection.duckdns.org']
 
 # Application definition
 
