@@ -57,7 +57,7 @@ services:
       retries: 5
 
   ingest:
-    image: ghcr.io/edilenesilva/ingest-app:v1.0
+    image: ghcr.io/edilenesilva/ingest-app:latest
     networks:
       - proxy
     depends_on:
@@ -70,7 +70,7 @@ services:
     restart: "no"
 
   fastapi:
-    image: ghcr.io/edilenesilva/fastapi-app:v1.0
+    image: ghcr.io/edilenesilva/fastapi-app:latest
     volumes:
       - ./saved_models:/app/saved_models
     networks:
@@ -89,7 +89,7 @@ services:
       - "traefik.http.services.fastapi.loadbalancer.server.port=8080"
 
   django:
-    image: ghcr.io/edilenesilva/django-app:v1.0
+    image: ghcr.io/edilenesilva/django-app:latest
     volumes:
       - django_data:/app/
     networks:
