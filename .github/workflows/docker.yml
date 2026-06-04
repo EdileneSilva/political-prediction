@@ -59,7 +59,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # 8. Build + push FASTAPI
       - name: Extract metadata for FastAPI
@@ -142,7 +142,7 @@ jobs:
             DEBUG=${{ secrets.DEBUG }}
             SECRET_KEY=${{ secrets.SECRET_KEY }}
             EOF
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GCHR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             sed -i "s|:latest|:${{ github.ref_name }}|g" docker-compose.yaml
             docker image prune -f
             docker compose -f docker-compose.yaml pull
