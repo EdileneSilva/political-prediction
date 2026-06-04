@@ -142,7 +142,7 @@ jobs:
             DEBUG=${{ secrets.DEBUG }}
             SECRET_KEY=${{ secrets.SECRET_KEY }}
             EOF
-            echo "${{ secrets.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}}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GCHR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             sed -i "s|:latest|:${{ github.ref_name }}|g" docker-compose.yaml
             docker image prune -f
             docker compose -f docker-compose.yaml pull
