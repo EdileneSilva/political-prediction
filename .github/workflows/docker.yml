@@ -1,19 +1,23 @@
-name: CI/CD - Lint + Build + Push
-
+name: CI/CD - Lint + Build + Push + Deploy
 on:
   push:
     branches: [ "develop" ]
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
 
     steps:
-
       # 1. Code checkout
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,39 +39,112 @@ jobs:
       # 5. Install dependencies
       - name: Install dependencies
         run: |
-            pip install --upgrade pip
-            pip install pytest-django httpx
-            pip install -r api/requirements-dev.txt
-            pip install -r django_political_app/requirements-dev.txt
+          pip install --upgrade pip
+          pip install pytest-django httpx
+          pip install -r api/requirements-dev.txt
+          pip install -r django_political_app/requirements-dev.txt
 
-      #
       - name: Set environment variables
         run: |
-            echo "DJANGO_SETTINGS_MODULE=django_political_app.settings" >> $GITHUB_ENV
-            echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV      
+          echo "DJANGO_SETTINGS_MODULE=django_political_app.settings" >> $GITHUB_ENV
+          echo "SECRET_KEY=test-secret-key" >> $GITHUB_ENV
 
-      # 5. tests 
+      # 6. Tests
       - name: Run tests
         run: pytest
 
-      # 5. Login GitHub Container Registry
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      # 7. Login to GitHub Container Registry
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 6. Build + push FASTAPI
+      # 8. Build + push FASTAPI
+      - name: Extract metadata for FastAPI
+        id: meta-fastapi
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/edilenesilva/fastapi-app
+
       - name: Build and push FastAPI
-        run: |
-          docker build -t ghcr.io/edilenesilva/fastapi-app:v1.0 ./api
-          docker push ghcr.io/edilenesilva/fastapi-app:v1.0
+        id: push-fastapi
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: ./api
+          push: true
+          tags: ${{ steps.meta-fastapi.outputs.tags }}
+          labels: ${{ steps.meta-fastapi.outputs.labels }}
 
-      # 7. Build + push DJANGO
+      # 9. Build + push DJANGO
+      - name: Extract metadata for Django
+        id: meta-django
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/edilenesilva/django-app
+
       - name: Build and push Django
-        run: |
-          docker build -t ghcr.io/edilenesilva/django-app:v1.0 ./django_political_app
-          docker push ghcr.io/edilenesilva/django-app:v1.0
+        id: push-django
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: ./django_political_app
+          push: true
+          tags: ${{ steps.meta-django.outputs.tags }}
+          labels: ${{ steps.meta-django.outputs.labels }}
 
-      # 8. Build + push INGEST
+      # 10. Build + push INGEST
+      - name: Extract metadata for Ingest
+        id: meta-ingest
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/edilenesilva/ingest-app
+
       - name: Build and push Ingest
-        run: |
-          docker build -t ghcr.io/edilenesilva/ingest-app:v1.0 -f scripts/Dockerfile .
-          docker push ghcr.io/edilenesilva/ingest-app:v1.0
+        id: push-ingest
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: .
+          file: ./scripts/Dockerfile
+          push: true
+          tags: ${{ steps.meta-ingest.outputs.tags }}
+          labels: ${{ steps.meta-ingest.outputs.labels }}
+
+      # 11. Copy docker-compose to VPS
+      - name: Copy docker-compose to VPS
+        if: github.event_name == 'release'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          source: "docker-compose.yaml"
+          target: "~/political-prediction/"
+
+      # 12. Deploy on VPS
+      - name: Deploy on VPS
+        if: github.event_name == 'release'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            mkdir -p ~/political-prediction/letsencrypt
+            cd ~/political-prediction
+            cat > .env << 'EOF'
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            DEBUG=${{ secrets.DEBUG }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            EOF
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            sed -i "s|:latest|:${{ github.ref_name }}|g" docker-compose.yaml
+            docker image prune -f
+            docker compose -f docker-compose.yaml pull
+            docker compose -f docker-compose.yaml up -d
+
