@@ -1,7 +1,7 @@
 name: CI/CD - Lint + Build + Push + Deploy
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "feat/vps" ]
   release:
     types: [published]
 
@@ -147,4 +147,4 @@ jobs:
             docker image prune -f
             docker compose -f docker-compose.yaml pull
             docker compose -f docker-compose.yaml up -d
-            
+
